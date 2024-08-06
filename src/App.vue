@@ -2,40 +2,44 @@
 import { custom, http, useAccount } from '@wagmi/vue'
 import Account from './Account.vue';
 import Connect from './Connect.vue';
-import { createPublicClient, createWalletClient, parseEther } from 'viem'
-import { V06 } from "userop";
 import { base } from 'viem/chains'
-
-
-
+import { AAWrapProvider, SmartAccount, SendTransactionMode } from '@particle-network/aa';
 
 const { isConnected } = useAccount();
-const ethClient = createPublicClient({
-  chain: base,
-  transport: http()
-});
-
-const walletClient = createWalletClient({
-  chain: base,
-  transport: custom(window.ethereum!)
-});
 
 
 async function sendTx() {
-  // @ts-ignore
-  const account = new V06.Account.Instance({ ...V06.Account.Common.SimpleAccount.base(ethClient, walletClient), })
+  const provider = window.ethereum;
+  const smartAccount = new SmartAccount(provider, {
+    projectId: 'a46ee986-8fda-4e7e-9244-9cdfbf2abee6',
+    clientKey: 'cfLaQ7qR9stRzTPJOhnq44tGWpnFCpuDoYS29YUp',
+    appId: 'd9578237-3c05-4218-a0da-897e9121ed13',
+    aaOptions: {
+      accountContracts: {  // 'BICONOMY', 'CYBERCONNECT', 'SIMPLE'
+        BICONOMY: [
+          {
+            version: '2.0.0',
+            chainIds: [base.id],
+          }
+        ],
+      },
+    },
+  });
 
-  console.log(account);
-  console.log(account.getAddress())
-  const TO_ADDRESS = "0x35Da4245A139BabB464782b8439ced60d1b5202B"
-  const VALUE = "0.00001"
-  const send = await account
-      .encodeCallData("execute", [TO_ADDRESS, parseEther(VALUE), "0x"])
-      .sendUserOperation();
+  smartAccount.setSmartAccountContract({ name: 'BICONOMY', version: '2.0.0' });
+  const address = await smartAccount.getAddress();
+
+  console.log(smartAccount)
+
+  console.log('address', address);
+
+  const isDeploy = await smartAccount.isDeployed();
+  console.log('isDeploy', isDeploy);
+  if (!isDeploy) {
+    const txHash = await smartAccount.deployWalletContract();
+  }
 
 
-  const receipt = await send.wait();
-  console.log(receipt);
 }
 
 

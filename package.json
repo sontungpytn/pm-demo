@@ -9,6 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@particle-network/aa": "^1.5.3",
         "@particle-network/connect": "^1.2.1",
         "@tanstack/vue-query": "^5.51.21",
         "@wagmi/vue": "^0.0.34",
